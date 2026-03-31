@@ -8,7 +8,7 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
-# COPIA A PASTA SRC EXPLICITAMENTE (Tem que ser COPY em inglês e com espaço)
+# COPIA A PASTA SRC EXPLICITAMENTE
 COPY src ./src
 
 # Compila forçando a limpeza
@@ -17,47 +17,24 @@ RUN mvn clean package -DskipTests
 # ==========================================
 # 2. Estágio de Runtime
 # ==========================================
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jre-jammy
+WORKDIR /app
 
-# Variáveis de ambiente
 ENV DISPLAY=:99
 ENV JAVA_OPTS="-Xmx512m"
 
-# Instala todas as dependências em uma única camada (Layer)
-# Isso inclui bibliotecas de interface, XVFB/VNC e o Chromium com seu Driver
+# Instala dependências do Chrome e interface gráfica
 RUN apt-get update && apt-get install -y \
-    wget \
-    unzip \
-    fonts-liberation \
-    libasound2t64 \
-    libatk-bridge2.0-0 \
-    libdrm2 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libatspi2.0-0 \
-    libxshmfence1 \
-    xvfb \
-    x11vnc \
-    tigervnc-standalone-server \
-    chromium \
-    chromium-driver \
+    wget gnupg unzip fonts-liberation libasound2 libatk-bridge2.0-0 \
+    libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 \
+    libxrandr2 libgbm1 libatspi2.0-0 libxshmfence1 \
+    chromium chromium-driver xvfb x11vnc \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
-# Copia o JAR do estágio de build
-# ATENÇÃO: Verifique se o caminho '/app/bot-vagas/target/*.jar' está correto. 
-# Se o seu pom.xml estiver na raiz, o caminho costuma ser apenas '/app/target/*.jar'
+# Copia o JAR gerado no estágio anterior
 COPY --from=build /app/target/*.jar app.jar
 
-# Cria um link simbólico do chromedriver para a pasta /app (mantendo a sua lógica original)
-RUN ln -s /usr/bin/chromedriver /app/chromedriver
-
-# Copia e configura o script de inicialização
+# Configura o script de inicialização
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
