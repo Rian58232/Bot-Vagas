@@ -46,7 +46,7 @@ WORKDIR /app
 # Copia o JAR do estágio de build
 # ATENÇÃO: Verifique se o caminho '/app/bot-vagas/target/*.jar' está correto. 
 # Se o seu pom.xml estiver na raiz, o caminho costuma ser apenas '/app/target/*.jar'
-COPY --from=build /app/bot-vagas/target/*.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 
 # Cria um link simbólico do chromedriver para a pasta /app (mantendo a sua lógica original)
 RUN ln -s /usr/bin/chromedriver /app/chromedriver
