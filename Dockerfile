@@ -5,7 +5,13 @@ FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
 # Copia os arquivos do projeto e compila
-COPY . .
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# COPIA A PASTA SRC EXPLICITAMENTE
+COPY src ./src
+
+# Compila forçando a limpeza
 RUN mvn clean package -DskipTests
 
 # ==========================================
